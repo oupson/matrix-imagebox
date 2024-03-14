@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageBox Matrix Widget</title>
+    <script src="index.js" type="module"></script>
+    <style>
+        * {
+            box-sizing: inherit;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            overflow: visible;
+        }
+
+        .search-box {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .search-box * {
+            padding: 0.1em;
+        }
+
+        .search-box>input[type=text] {
+            flex: 1;
+        }
+
+        #img-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            overflow: hidden auto;
+            flex: 1;
+        }
+
+        #img-grid>img {
+            aspect-ratio: 1;
+            width: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="search-box">
+        <input type="text" value="" id="search-box" />
+        <input type="button" value="Rechercher" id="search" />
+    </div>
+    <div id="img-grid">
+
+    </div>
+</body>
+
+</html>

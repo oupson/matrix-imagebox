@@ -32,7 +32,6 @@ class Transport {
             requestId: requestId,
             data: messageData
         };
-        console.log(message);
         this.window.parent.postMessage(message, "*");
 
         const callbackDict = this.callbacks;
@@ -43,7 +42,7 @@ class Transport {
                     delete this.callbacks[message.requestId];
                     reject(new Error("timeout waiting response"));
                 } else {
-                    console.debug("Already resolved")
+                    console.trace(`${requestId} - already resolved`);
                 }
             }, 10000);
         });
@@ -59,12 +58,11 @@ class Transport {
 
         if (message.api == "fromWidget") {
             if (this.callbacks[message.requestId] !== undefined) {
-                console.log("resolving");
                 const [resolve, _] = this.callbacks[message.requestId];
                 delete this.callbacks[message.requestId];
                 resolve(message);
             } else {
-                console.warn("missing callback");
+                console.warn(`${message.requestId} - missing callback`);
             }
         } else {
             if (this.onMatrixMessage != null) {
@@ -112,9 +110,11 @@ class Widget {
         for (const img of results) {
             const imgUrl = img.media_formats.gif.url;
 
+            const [w, h] = img.media_formats.gif.dims;
+
             const imageWidget = document.createElement("img");
             imageWidget.src = imgUrl;
-            imageWidget.onclick = (_e) => this.sendImage(imgUrl);
+            imageWidget.onclick = (_e) => this.sendImage(imgUrl, w, h);
 
             this.imgGrid.appendChild(imageWidget);
         }
@@ -140,28 +140,32 @@ class Widget {
         }
     }
 
-    async sendImage(gifUrl) {
+    async sendImage(gifUrl, w, h) {
+        this.imgGrid.replaceChildren();
         const img = await fetch(gifUrl)
             .then(r => r.blob());
 
-        const responseMessage = await this.transport.sendMessage("org.matrix.msc4039.upload_file", {
+         const responseMessage = await this.transport.sendMessage("org.matrix.msc4039.upload_file", {
             file: img
         });
 
         const uri = responseMessage.response.content_uri;
 
-        const s = await this.transport.sendMessage("send_event", {
+        this.transport.sendMessage("send_event", {
             "type": "m.room.message",
             "content": {
                 "msgtype": "m.image",
                 "url": uri,
                 "info": {
                     "mimetype": "image/gif",
+                    "org.matrix.msc4230.is_animated": true,
+                    "size": img.size,
+                    "w": w,
+                    "h": h
                 },
-                "body": ""
+                "body": "meme.gif"
             }
         });
-        console.log("send", s);
     }
 }
 
